@@ -7,17 +7,97 @@ transTime := (-Log[1 - RandomReal[]])
 1) Initial configuration of particles
 2) Assignation of clocks and times
 3) Find Subscript[t, min]
-4) Update the particle site
-5) Update list of clocks = list of clocks - Subscript[t, min] and 0 -> Random
-6) Repeat 3) to 5)
+4) Update the particle site & list of clocks
+5) Repeat 3) to 4) until desired
 
 (*Code*)
+
 (*1) Initial Configuration*)
 conf[1] = {0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1}
 
+(*2) Assignation of clocks and times*)
 (*Recordar la distribuciÃ³n acumulada.*)
 P(Subscript[T, i]<t ) = e^-t
 Subscript[F, Subscript[T, i]](t) = Subscript[\[Integral], 0]^te^-t dt = 1-e^-t
 
 Plot[1 - Exp[-t], {t, 0, 10}, PlotRange -> All, 
  AxesLabel -> {t, Subscript[F, Subscript[T, i]]}]
+
+(*Observation: 
+	- Theoretically impossible to have equal times for different particles.
+	- Computationally probable but very low probability. *)
+
+transTime := (-Log[1 - RandomReal[]])(*NSolve[1-Exp[-t]\[Equal]RandomReal[],t]*)
+
+listTimes[1] = ((conf[1] /. (1 :> transTime)))
+
+(*3) Find Subscript[t, min]*)
+tmin[1] = Min[DeleteCases[listTimes[1], 0]]
+
+(*4) Update particle site & list of clocks*)
+
+(*see function to update*)
+
+conf[1] = (initConf[0.5]; {0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 
+   1})
+
+listTimes[1] = ((conf[1] /. (1 :> transTime)))
+
+Options[update] = {"Print" -> False};
+update[conf_, t_, opts : OptionsPattern[]] := 
+ Module[{resConf = conf[t], listTimesNew, tminNew, printQ},
+  printQ = OptionValue[opts, "Print"];
+  
+  (*Update Global variables*)
+  
+  tmin[t] = 
+   Min[DeleteCases[listTimes[t], 0]];(*min of the list of times: 
+  determine the particle which will move*)
+  
+  pos[t] = (FirstPosition[listTimes[t], tmin[t]] // First);
+  (*position of the particle which will move*)
+  
+  (*Update state*)
+  listTimesNew = listTimes[t];
+  With[{left = (pos[t] - 1) /. (0 :> nmax), 
+    right = Mod[pos[t] + 1, nmax, 1], \[Delta] = 
+     2*Floor[RandomReal[] + p] - 1},
+   If[\[Delta] > 0,
+     If[resConf[[right]] == 0,
+      (*move*)
+      resConf[[right]] = 1; 
+      listTimesNew[[right]] = listTimes[t][[pos[t]]];
+      resConf[[pos[t]]] = 0; listTimesNew[[pos[t]]] = 0
+      ],
+     If[resConf[[left]] == 0,
+      (*move*)
+      resConf[[left]] = 1; 
+      listTimesNew[[left]] = listTimes[t][[pos[t]]];
+      resConf[[pos[t]]] = 0; listTimesNew[[pos[t]]] = 0
+      ]
+     ];
+   ];
+  (*update global variables*)
+  
+  listTimes[
+    t + 1] = ((listTimesNew /. (x_Real :> (x - tmin[t])) /. (0.0 :> 
+        transTime)));
+  conf[t + 1] = resConf;
+  If[printQ, Print[t -> (t + 1)]; 
+   Print[ArrayPlot[{style[conf[t], pos[t]], conf[t + 1]}]]];
+  
+  (*return next state*)
+  conf[t + 1]
+  ]
+
+evolution[conf_, time_, opts : OptionsPattern[]] := Module[{},
+  (*evolves the initconf up to time t, defining conf[1],conf[2],...,
+  conf[t]*)
+  Do[conf[t + 1] = update[conf, t, opts], {t, 1, time - 1}]
+  (*finally we've got an ensemble conf[j]*)
+  ]
+
+(*end Code*)
+
+evolution[conf, 10, "Print" -> True]
+(**)
