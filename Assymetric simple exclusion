@@ -1,8 +1,13 @@
 (*Mathematica 10 code*)
 
-(*Simulating continous exponential time*)
-transTime := (-Log[1 - RandomReal[]])
+(*
+Statement of the problem: http://en.wikipedia.org/wiki/Asymmetric_simple_exclusion_process
+In this code I simulate the continous time assymetric simple exclusion process.
 
+Input: configuration of particles in Z1
+Output: evolution of the process
+
+*)
 (*Approach*)
 (*
 1) Initial configuration of particles
@@ -31,7 +36,7 @@ Plot[1 - Exp[-t], {t, 0, 10}, PlotRange -> All,
 	- Theoretically impossible to have equal times for different particles.
 	- Computationally probable but very low probability. *)
 
-transTime := (-Log[1 - RandomReal[]])(*NSolve[1-Exp[-t]\[Equal]RandomReal[],t]*)
+transTime := (-Log[1 - RandomReal[]])(*NSolve[1-Exp[-t]\[Equal]RandomReal[],t]*) (*simulating the continous time*)
 
 listTimes[1] = ((conf[1] /. (1 :> transTime)))
 
@@ -47,11 +52,10 @@ conf[1] = (initConf[0.5]; {0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0,
 
 listTimes[1] = ((conf[1] /. (1 :> transTime)))
 
+p=1.; (*probability of going right*)
 nmax = 15
-
 initConf[prob_] := (initConf[prob] = 
     Table[Floor[Random[] + prob], {i, nmax}];)
-
 style[list_, i_] := MapAt[Style[#, Bold] &, list, i];
 
 Options[update] = {"Print" -> False};
