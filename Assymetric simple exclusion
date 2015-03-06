@@ -1,0 +1,23 @@
+(*Mathematica code*)
+
+(*Simulating continous exponential time*)
+transTime := (-Log[1 - RandomReal[]])
+
+(*Approach*)
+1) Initial configuration of particles
+2) Assignation of clocks and times
+3) Find Subscript[t, min]
+4) Update the particle site
+5) Update list of clocks = list of clocks - Subscript[t, min] and 0 -> Random
+6) Repeat 3) to 5)
+
+(*Code*)
+(*1) Initial Configuration*)
+conf[1] = {0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1}
+
+(*Recordar la distribuciÃ³n acumulada.*)
+P(Subscript[T, i]<t ) = e^-t
+Subscript[F, Subscript[T, i]](t) = Subscript[\[Integral], 0]^te^-t dt = 1-e^-t
+
+Plot[1 - Exp[-t], {t, 0, 10}, PlotRange -> All, 
+ AxesLabel -> {t, Subscript[F, Subscript[T, i]]}]
