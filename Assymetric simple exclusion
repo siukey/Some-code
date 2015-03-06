@@ -47,6 +47,13 @@ conf[1] = (initConf[0.5]; {0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0,
 
 listTimes[1] = ((conf[1] /. (1 :> transTime)))
 
+nmax = 15
+
+initConf[prob_] := (initConf[prob] = 
+    Table[Floor[Random[] + prob], {i, nmax}];)
+
+style[list_, i_] := MapAt[Style[#, Bold] &, list, i];
+
 Options[update] = {"Print" -> False};
 update[conf_, t_, opts : OptionsPattern[]] := 
  Module[{resConf = conf[t], listTimesNew, tminNew, printQ},
